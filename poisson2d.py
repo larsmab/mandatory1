@@ -67,7 +67,9 @@ class Poisson2D:
         A : scipy sparse LIL matrix
             The vectorized Laplace operator
         """
-        D = self.D(N, self.L/N+1)
+        D = self.D(N, self.L/N)
+        return (sparse.kron(D, sparse.eye(N+1)) +
+                sparse.kron(sparse.eye(N+1), D)).toli()
         
 
     def assemble(
@@ -99,7 +101,18 @@ class Poisson2D:
         Dirichlet boundary conditions using the exact solution ue.
 
         """
-        raise NotImplementedError("The assemble method is not implemented yet.")
+        xij, yij = self.create_mesh(N)
+        A = self.laplace(N)
+        b = sp.lambdify((x,y), f)(xij, yij)
+
+        B = np.ones((N+1, N+1), dtype=bool)
+        B[1:-1, 1:-1] = 0
+        bnds = np.where(B.ravel() == 1)[0]
+        for i in bnds:
+            A[i] = 0
+            A[i,i] = 1
+
+        
 
     def meshfunction(self, u: sp.Expr, xij: np.ndarray, yij: np.ndarray) -> np.ndarray:
         """Return Sympy function as mesh function
