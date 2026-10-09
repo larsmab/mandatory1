@@ -20,6 +20,7 @@ class Poisson2D:
     """
 
     def __init__(self, L: float):
+        self.L = L
         self.p = Poisson(L)  # we can reuse some of the code from the 1D case
 
     def create_mesh(self, N: int) -> tuple[np.ndarray, np.ndarray]:
@@ -40,6 +41,19 @@ class Poisson2D:
         xij, yij = np.meshgrid(xi, xi, indexing="ij", sparse=True)
         return xij, yij
 
+    def D(self, N: int, d: float) -> sparse.lil_matrix:
+        """
+        Returns the second differentiation matrix
+
+        d^2u/dx^2 = Du
+        d^2u/dy^2 = uD^T
+        """
+        D = sparse.diags([1., -2., 1.], [-1., 0., 1.], (N+1, N+1), 'lil')
+        D[0, :4] = 2., -5., 4., -1.
+        D[-1, -4:] = -1., 4., -5., 2.
+        D /= d**2
+        return D
+
     def laplace(self, N: int) -> sparse.lil_matrix:
         """Return a vectorized Laplace operator
 
@@ -53,7 +67,8 @@ class Poisson2D:
         A : scipy sparse LIL matrix
             The vectorized Laplace operator
         """
-        raise NotImplementedError("The laplace method is not implemented yet.")
+        D = self.D(N, self.L/N+1)
+        
 
     def assemble(
         self, N: int, f: sp.Expr, ue: sp.Expr
