@@ -165,7 +165,7 @@ class Wave2D:
             if store_data > 0 and (n+1) % store_data == 0:
                 plotdata[n+1] = Un.copy()
             err.append(self.l2_error(Un, (n+1)*self.dt))
-            
+
         if store_data == -1:
             return self.h, err
         return plotdata
@@ -212,8 +212,8 @@ class Wave2D:
 class Wave2D_Neumann(Wave2D):
     def D2(self, N: int) -> sparse.lil_matrix:
         D = sparse.diags([1, -2, 1], [-1, 0, 1], (N+1, N+1), 'lil')
-        D[0, :2] = -2, 2      # first row: (-2, 2, 0, ...)
-        D[-1, -2:] = 2, -2    # last row:  (..., 0, 2, -2)
+        D[0, :2] = -2, 2
+        D[-1, -2:] = 2, -2
         return D
 
     def ue(self, mx: int, my: int) -> sp.Expr:
@@ -236,5 +236,7 @@ def test_convergence_wave2d_neumann():
 
 
 def test_exact_wave2d():
-    raise NotImplementedError("The test_exact_wave2d function is not implemented yet.")
+    for sol in (Wave2D(), Wave2D_Neumann()):
+        h, err = sol(N=100, Nt=10, cfl=1/np.sqrt(2), mx=2, my=2)
+        assert err[-1] < 1e-12
 
