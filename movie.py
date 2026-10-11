@@ -11,6 +11,5 @@ frames = []
 for n, val in data.items():
     frame = ax.plot_wireframe(xij, yij, val, rstride=2, cstride=2)
     frames.append([frame])
-ax.set_zlim(-1, 1)
 ani = animation.ArtistAnimation(fig, frames, interval=400, blit=True, repeat_delay=1000)
 ani.save("report/neumannwave.gif", writer="pillow", fps=15)
